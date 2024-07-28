@@ -1,10 +1,10 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from .models import User, Category, Listing
+from .models import User, Category, Listing, Comment
 
 
 def index(request):
@@ -105,14 +105,15 @@ def filterCategory(request):
             return render(request, "auctions/index.html", {
                 "listings": active_listings,
                 "categories": all_categories
-            })
-@login_required   
+            })   
 def listing(request, id):
     listing = get_object_or_404(Listing, pk=id)
     listing_in_watchlist = request.user in listing.watchlist.all()
+    all_comments = Comment.objects.filter(listing=listing)
     return render(request, "auctions/listing.html", {
         "listing": listing,
-        "watchlist": listing_in_watchlist
+        "watchlist": listing_in_watchlist,
+        "all_comments": all_comments
     })
 @login_required
 def addWatchlist(request, id):
@@ -135,3 +136,18 @@ def showWatchlist(request):
     return render(request, "auctions/watchlist.html", {
         "watchlist": watchlist
     })
+
+@login_required
+def addComment(request, id):
+    if request.method == "POST":
+        currentuser = request.user
+        listingdata = Listing.objects.get(pk=id)
+        message = request.POST["comment"]
+
+        newComment = Comment(
+            author=currentuser,
+            listing=listingdata,
+            comment=message
+        )
+        newComment.save()
+    return HttpResponseRedirect(reverse("listing", args=(id, )))

@@ -27,9 +27,16 @@ class Listing(models.Model):
         return self.title
     
 class Comment(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="commenter")
-    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, blank=True, null=True, related_name="comment")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="author")
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, blank=True, null=True, related_name="listing")
     comment = models.CharField(max_length=300)
 
     def __str__(self):
         return f"{self.author} commented on {self.listing} : {self.comment}"
+    
+class Bid(models.Model):
+    bidder = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="user")
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, blank=True, null=True, related_name="listing")
+    offer = models.FloatField()
+    is_biddable = models.BooleanField(default=True)
+    
