@@ -22,6 +22,12 @@
     <p>Price: {{ listing.price.offer }}$</p>
     <p>Category: {{ listing.category }}</p>
     <p>Owner {{ listing.owner }}</p>
+    {% if isOwner and listing.is_active%}
+    <form action="{% url 'closeAuction' id=listing.id %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger mt-3">Close Auction</button>
+    </form>
+    {% endif %}
     <div class="row">
         <div class="row">
             {% if user.is_authenticated %}

@@ -114,11 +114,13 @@ def listing(request, id):
     listing_in_watchlist = request.user in listing.watchlist.all()
     all_comments = Comment.objects.filter(listing=listing)
     all_bids = Bid.objects.filter(id = id)
+    isOwner = request.user.username == listing.owner.username
     return render(request, "auctions/listing.html", {
         "listing": listing,
         "watchlist": listing_in_watchlist,
         "all_comments": all_comments,
-        "all_bids": all_bids
+        "all_bids": all_bids,
+        "isOwner": isOwner
     })
 @login_required
 def addWatchlist(request, id):
@@ -186,3 +188,10 @@ def addBid(request, id):
                 "all_comments": all_comments,
                 "watchlist": listing_in_watchlist,
             })
+        
+@login_required
+def closeAuction(request, id):
+    listingdata = Listing.objects.get(pk=id)
+    listingdata.is_active = False
+    listingdata.save()
+    return HttpResponseRedirect(reverse("listing", args=(id, )))
