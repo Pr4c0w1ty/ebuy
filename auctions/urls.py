@@ -14,4 +14,5 @@ urlpatterns = [
     path("removeWatchlist/<int:id>", views.removeWatchlist, name="removeWatchlist"),
     path("watchlist", views.showWatchlist, name="watchlist"),
     path("addComment/<int:id>", views.addComment, name="addComment"),
+    path("addBid/<int:id>", views.addBid, name="addBid"),
 ]

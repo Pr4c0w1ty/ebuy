@@ -10,13 +10,18 @@ class Category(models.Model):
 
     def __str__(self):
         return self.Category_names
+class Bid(models.Model):
+    bidder = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="bidder")
+    offer = models.FloatField(default=0)
 
+    def __str__(self):
+        return f"{self.bidder} offered {self.offer}"
 
 class Listing(models.Model):
     title = models.CharField(max_length=30)
     description = models.CharField(max_length=300)
     image_url = models.CharField(max_length=1000)
-    price = models.FloatField()
+    price = models.ForeignKey(Bid, on_delete=models.CASCADE, blank=True, null=True, related_name="bid")
     is_active = models.BooleanField(default=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="user")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, blank=True, null=True, related_name="category")
@@ -34,9 +39,5 @@ class Comment(models.Model):
     def __str__(self):
         return f"{self.author} commented on {self.listing} : {self.comment}"
     
-class Bid(models.Model):
-    bidder = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True, related_name="user")
-    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, blank=True, null=True, related_name="listing")
-    offer = models.FloatField()
-    is_biddable = models.BooleanField(default=True)
+
     

@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from .models import User, Category, Listing, Comment
+from .models import User, Category, Listing, Comment, Bid
 
 
 def index(request):
@@ -83,11 +83,14 @@ def create_listing(request):
 
         categoryData = Category.objects.get(Category_names=category)
 
+        bid = Bid(offer=float(price), bidder = owner)
+        bid.save()
+
         new_listing = Listing(
             title=title,
             description=description,
             image_url=image_url,
-            price=price, 
+            price=bid, 
             owner=owner,
             category=categoryData)
         new_listing.save()
@@ -110,10 +113,12 @@ def listing(request, id):
     listing = get_object_or_404(Listing, pk=id)
     listing_in_watchlist = request.user in listing.watchlist.all()
     all_comments = Comment.objects.filter(listing=listing)
+    all_bids = Bid.objects.filter(id = id)
     return render(request, "auctions/listing.html", {
         "listing": listing,
         "watchlist": listing_in_watchlist,
-        "all_comments": all_comments
+        "all_comments": all_comments,
+        "all_bids": all_bids
     })
 @login_required
 def addWatchlist(request, id):
@@ -145,9 +150,39 @@ def addComment(request, id):
         message = request.POST["comment"]
 
         newComment = Comment(
-            author=currentuser,
-            listing=listingdata,
-            comment=message
+            author = currentuser,
+            listing = listingdata,
+            comment = message
         )
         newComment.save()
     return HttpResponseRedirect(reverse("listing", args=(id, )))
+
+@login_required
+def addBid(request, id):
+    if request.method == "POST":
+        newBid = request.POST['newBid']
+        currentuser = request.user
+        listingdata = Listing.objects.get(pk=id)
+        all_comments = Comment.objects.filter(listing=listingdata)
+        listing = get_object_or_404(Listing, pk=id)
+        listing_in_watchlist = request.user in listing.watchlist.all()
+        if listingdata.is_active == True and int(newBid) > listingdata.price.offer:
+            updateBid = Bid(bidder = currentuser, offer = newBid)
+            updateBid.save()
+            listingdata.price = updateBid
+            listingdata.save()
+            return render(request, "auctions/listing.html", {
+                "listing": listingdata,
+                "message": "Bid accepted",
+                "update": True,
+                "all_comments": all_comments,
+                "watchlist": listing_in_watchlist,
+            })
+        else:
+            return render(request, "auctions/listing.html", {
+                "listing": listingdata,
+                "message": "Bid not accepted",
+                "update": False,
+                "all_comments": all_comments,
+                "watchlist": listing_in_watchlist,
+            })
