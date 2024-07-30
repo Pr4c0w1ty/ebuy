@@ -14,7 +14,13 @@
             {% endif %}
         {% endif %}
     </div>
-
+    <div class="container">
+        {% if not listing.is_active and user == listing.price.bidder %}
+            <div class="alert alert-success" role="alert">
+                You won the auction!
+            </div>
+        {% endif %}
+    </div>
 
     <h2>{{listing.title}}</h2>
     <img src="{{ listing.image_url }}" height="400px" width="400px" class="card-img-top" alt="{{ listing.title }}">
